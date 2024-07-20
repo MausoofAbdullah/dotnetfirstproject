@@ -1,0 +1,20 @@
+﻿# Build results
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.swp
+
+# NuGet packages
+packages/
+*.nupkg
+
+# IDE-specific files
+.vs/
+.vscode/
+
+# Log files
+*.log
