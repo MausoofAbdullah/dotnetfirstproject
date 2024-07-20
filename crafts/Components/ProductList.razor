@@ -1,0 +1,125 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using crafts.Model;
+@using crafts.Service;
+@inject JsonFileProductService ProductService
+<div class="row custom-row">
+@foreach(var product in ProductService.GetProducts())
+{
+    <div class="col-md-4">
+<div class="card">
+    <div class="card-body">
+        <div class="card-img" style="background-image:url('@product.Img');"> </div>
+    <h5 class="card-title">
+        @product.Title
+    </h5>
+        </div>
+    </div>
+    <div class="card-footer">
+        <small class="text-muted">
+            <button @onclick="(e=>SelectProduct(product.Id))"
+                data-bs-toggle="modal" data-bs-target="#productModal" class="btn btn-primary">
+            More Info    
+            </button>
+
+        </small>
+    </div>
+    </div>
+}
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/fontawesome.min.css" integrity="sha512-B46MVOJpI6RBsdcU307elYeStF2JKT87SsHZfRSkjVi4/iZ3912zXi45X5/CBr/GbCyLx6M1GQtTKYRd52Jxgw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+@if (selectedProduct !=null)
+{
+    <div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="productTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="productTitle">@selectedProduct.Title</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="card">
+            <div class="card-img" style="background-image: url('@selectedProduct.Img');">
+            </div>
+            <div class="card-body">
+                <p class="card-text">@selectedProduct.Description</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+                    @if (voteCount == 0)
+                    {
+                        <span>Be the first one to vote !</span>
+                    }
+                    else
+                    {
+                        <span>@voteCount @voteLabel</span>
+                    }
+
+                    @for(int i = 0; i < 6; i++)
+                    {
+                        var currentStar = i;
+                        if (i <= currentRating)
+                        {
+                            <span  class="fa-solid fa-star" style="color: #FFD43B;" @onclick="(e=>submitRating(currentStar))"></span>
+                        }
+                        else
+                        {
+                            <span class=" fa-regular fa-star " @onclick="(e=>submitRating(currentStar))"></span>
+                            
+                        }
+                    }
+                </div>
+      </div>
+    </div>
+  </div> 
+}
+
+@code {
+    Product selectedProduct;
+    string selectedProductId;
+
+    void SelectProduct(string productId)
+    {
+        System.Console.WriteLine($"Selected Product ID: {productId}");
+
+        selectedProductId = productId;
+        selectedProduct = ProductService.GetProducts().First(x => x.Id == productId);
+        GetCurrentRatings();
+    }
+
+    int currentRating = 0;
+    int voteCount = 0;
+    string voteLabel;
+
+    void GetCurrentRatings()
+    {
+        if (selectedProduct.Ratings == null)
+        {
+            voteCount = 0;
+            currentRating = 0;
+        }
+        else
+        {
+            voteCount = selectedProduct.Ratings.Count();
+            voteLabel = voteCount > 1 ? "Votes" : "Vote";
+            currentRating = selectedProduct.Ratings.Sum() / voteCount;
+        }
+        System.Console.WriteLine($"current rating for {selectedProduct.Id}:{currentRating} ");
+    }
+
+    void submitRating(int rating)
+    {
+        System.Console.WriteLine($"rating recieved for {selectedProduct.Id}:{rating} ");
+        ProductService.AddRating(selectedProductId, rating);
+        SelectProduct(selectedProductId);
+
+    }
+
+
+
+}
